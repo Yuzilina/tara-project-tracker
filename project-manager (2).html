@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tara項目跟蹤</title>
+<link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f9fa;
+    --card: #ffffff;
+    --primary: #0d9488;
+    --primary-dark: #0f766e;
+    --primary-light: #ccfbf1;
+    --accent: #64748b;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Chiron GoRound TC', -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+    background: #f7f9fa;
+    color: #1e293b;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: relative;
+  }
+  h1 { 
+    font-size: 1.6rem; 
+    font-weight: 600; 
+    color: var(--primary);
+    letter-spacing: -0.01em;
+  }
+  .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: var(--primary-dark); }
+  .btn-secondary { 
+    background: white; 
+    color: var(--text); 
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: #f8fafc; }
+  .btn-heart {
+    background: var(--primary);
+    border-radius: 6px;
+    width: auto;
+    height: auto;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+  .view-toggle {
+    display: flex;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .view-toggle button {
+    background: transparent;
+    border: none;
+    padding: 7px 14px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .view-toggle button.active {
+    background: var(--primary);
+    color: white;
+  }
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .calendar-header h2 { font-size: 1.25rem; color: var(--text); font-weight: 600; }
+  .nav-btn {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .nav-btn:hover { background: #f8fafc; }
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .weekday {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    padding: 8px 0;
+  }
+  .day {
+    min-height: 100px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px;
+    background: #fafbfc;
+    cursor: pointer;
+    position: relative;
+  }
+  .day:hover { border-color: var(--primary); }
+  .day.other-month { opacity: 0.4; }
+  .day.today { 
+    border-color: var(--primary); 
+    background: var(--primary-light); 
+  }
+  .day-number {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .task-chip {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    border-radius: 12px;
+    margin-bottom: 3px;
+    color: #5a4a4a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+  .task-chip.completed {
+    background: #e2e8f0 !important;
+    opacity: 0.7;
+    text-decoration: line-through;
+    color: #94a3b8;
+  }
+  .task-chip input[type="checkbox"],
+  .week-task input[type="checkbox"],
+  .day-detail-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .task-chip input[type="checkbox"]:checked,
+  .week-task input[type="checkbox"]:checked,
+  .day-detail-item input[type="checkbox"]:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .task-chip input[type="checkbox"]:checked::after,
+  .week-task input[type="checkbox"]:checked::after,
+  .day-detail-item input[type="checkbox"]:checked::after {
+    content: '✓';
+    color: white;
+    font-size: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .more-tasks {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    text-align: center;
+  }
+  /* Weekly view */
+  .week-view {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    align-items: start;
+  }
+  .week-day {
+    min-height: 280px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    background: #fafbfc;
+    display: flex;
+    flex-direction: column;
+  }
+  .week-day.today {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .week-day-header {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .week-day {
+    min-height: 300px;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+    background: #fafbfc;
+    display: flex;
+    flex-direction: column;
+  }
+  .week-tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    align-content: flex-start;
+  }
+  .week-task {
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 0;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #5a4a4a;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    width: 100%;
+  }
+  .week-day.today {
+    border-color: var(--primary);
+    background: #fff0f5;
+  }
+  .week-day-header {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px dashed var(--border);
+    color: var(--primary);
+  }
+  .week-day-header .date {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+  .week-task {
+    border-radius: 12px;
+    padding: 6px 8px;
+    margin-bottom: 0;
+    font-size: 0.75rem;
+    cursor: pointer;
+    color: #5a4a4a;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    max-width: 100%;
+  }
+  .week-task.completed {
+    background: #e2e8f0 !important;
+    opacity: 0.75;
+    text-decoration: line-through;
+    color: #94a3b8;
+  }
+  .week-task .time {
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+  .week-task div {
+    white-space: normal;
+    word-break: break-word;
+  }
+  .week-task input[type="checkbox"] {
+    margin-top: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+  }
+  .modal-content h2 { color: var(--text); margin-bottom: 16px; font-weight: 600; line-height: 1.4; }
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 0.9rem; margin-bottom: 6px; font-weight: 500; color: var(--primary); }
+  input, textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #fafbfc;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  textarea { min-height: 70px; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+  .projects-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .project-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    background: white;
+    border: 2px solid var(--border);
+    font-weight: 500;
+  }
+  .color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .day-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .day-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fafbfc;
+    width: 100%;
+  }
+  .day-detail-item.completed {
+    opacity: 0.6;
+    text-decoration: line-through;
+  }
+  .timeline {
+    position: relative;
+    margin-left: 20px;
+    padding-left: 30px;
+    border-left: 3px solid #e2e8f0;
+  }
+  .timeline-day {
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .timeline-day::before {
+    content: '';
+    position: absolute;
+    left: -38px;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    background: var(--primary);
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .timeline-date {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 8px;
+    font-size: 1rem;
+  }
+  .timeline-task {
+    background: white;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-left: 4px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    cursor: pointer;
+    writing-mode: horizontal-tb !important;
+  }
+  .timeline-task * {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+  }
+  .timeline-task {
+    background: white;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-left: 4px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    cursor: pointer;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+  }
+  .timeline-task * {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: normal !important;
+  }
+  .timeline-task strong,
+  .timeline-task span,
+  .timeline-task div {
+    display: inline;
+    text-align: left;
+  }
+  .timeline-task strong,
+  .timeline-task div {
+    white-space: normal;
+    word-break: break-word;
+    text-align: left;
+  }
+  .timeline-task.completed {
+    opacity: 0.65;
+    text-decoration: line-through;
+    background: #f1f5f9;
+  }
+  .decoration {
+    position: absolute;
+    font-size: 1.5rem;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .deco-1 { top: -10px; left: -10px; }
+  .deco-2 { top: -15px; right: 80px; }
+  .illustration {
+    text-align: center;
+    margin: 10px 0 20px;
+    font-size: 2.5rem;
+  }
+  @media (max-width: 700px) {
+    .week-view { grid-template-columns: 1fr; }
+    .calendar { font-size: 0.8rem; }
+    h1 { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Tara項目跟蹤</h1>
+    <div class="header-actions">
+      <div class="view-toggle">
+        <button id="monthViewBtn" class="active">月曆</button>
+        <button id="weekViewBtn">本週</button>
+      </div>
+      <button class="btn btn-secondary" id="manageProjectsBtn">管理專案</button>
+      <button class="btn" id="addTaskBtn">＋ 新增任務</button>
+    </div>
+  </header>
+
+  <div class="projects-bar" id="projectsBar"></div>
+
+  <div class="calendar-header">
+    <button class="nav-btn" id="prevBtn">← 上一頁</button>
+    <h2 id="periodTitle"></h2>
+    <button class="nav-btn" id="nextBtn">下一頁 →</button>
+  </div>
+
+  <div id="calendarContainer"></div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal" id="taskModal">
+  <div class="modal-content">
+    <h2 id="taskModalTitle">新增任務</h2>
+    <form id="taskForm">
+      <input type="hidden" id="taskId">
+      <div class="form-group">
+        <label>任務名稱 *</label>
+        <input type="text" id="taskName" required>
+      </div>
+      <div class="form-group">
+        <label>所屬專案 *</label>
+        <select id="taskProject" required></select>
+      </div>
+      <div class="form-group">
+        <label>日期 *</label>
+        <input type="date" id="taskDate" required>
+      </div>
+      <div class="form-group">
+        <label>時間</label>
+        <input type="time" id="taskTime">
+      </div>
+      <div class="form-group">
+        <label>描述</label>
+        <textarea id="taskDesc"></textarea>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="taskCompleted"> 已完成</label>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" id="cancelTask">取消</button>
+        <button type="button" class="btn" id="deleteTaskBtn" style="display:none; background:#ff6b6b;">🗑️ 刪除</button>
+        <button type="submit" class="btn">儲存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Project Modal -->
+<div class="modal" id="projectModal">
+  <div class="modal-content">
+    <h2>管理專案</h2>
+    <div id="projectList" style="margin-bottom:16px;"></div>
+    <form id="projectForm">
+      <div class="form-group">
+        <label>新專案名稱</label>
+        <input type="text" id="newProjectName" placeholder="例如：工作、學習、生活">
+      </div>
+      <div class="form-group">
+        <label>顏色</label>
+        <input type="color" id="newProjectColor" value="var(--primary)">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" id="closeProjectModal">關閉</button>
+        <button type="submit" class="btn">⭐ 新增專案</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Project Timeline Modal -->
+<div class="modal" id="projectTimelineModal">
+  <div class="modal-content" style="max-width: 640px;">
+    <h2 id="projectTimelineTitle">專案時間線</h2>
+    <div id="projectTimelineContent"></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" id="closeProjectTimeline">關閉</button>
+      <button type="button" class="btn" id="addTaskToProject">＋ 在這個專案新增任務</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="dayModal">
+  <div class="modal-content">
+    <h2 id="dayModalTitle">當日任務</h2>
+    <div id="dayTaskList"></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" id="closeDayModal">關閉</button>
+      <button type="button" class="btn" id="addTaskFromDay">＋ 在這天新增</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'pm-calendar-v2';
+const DEFAULT_PROJECTS = [
+  { id: 'work', name: '工作', color: 'var(--primary)' },
+  { id: 'study', name: '學習', color: '#c084fc' },
+  { id: 'life', name: '生活', color: '#34d399' }
+];
+
+let data = { projects: [], tasks: [] };
+let viewMode = 'month';
+let currentYear, currentMonth;
+let weekStart;
+let selectedDateForAdd = null;
+
+function loadData() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    data = JSON.parse(saved);
+    data.tasks.forEach(t => { if (t.completed === undefined) t.completed = false; });
+  } else {
+    data = { projects: [...DEFAULT_PROJECTS], tasks: [] };
+  }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function getProject(id) {
+  return data.projects.find(p => p.id === id) || { name: '未分類', color: '#94a3b8' };
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&':'&','<':'<','>':'>','"':'"',"'":'&#39;'
+  }[m]));
+}
+
+function formatDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function sortTasks(tasks) {
+  return tasks.sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    return (a.time || '00:00').localeCompare(b.time || '00:00');
+  });
+}
+
+function toggleComplete(taskId, checked) {
+  const task = data.tasks.find(t => t.id === taskId);
+  if (task) {
+    task.completed = checked;
+    saveData();
+    render();
+  }
+}
+
+function renderProjectsBar() {
+  const bar = document.getElementById('projectsBar');
+  if (data.projects.length === 0) {
+    bar.innerHTML = '<span style="color:var(--text-light);font-size:0.9rem;">還沒有專案</span>';
+    return;
+  }
+  bar.innerHTML = data.projects.map(p => `
+    <span class="project-tag" style="cursor:pointer;" onclick="openProjectTimeline('${p.id}')">
+      <span class="color-dot" style="background:${p.color}"></span>
+      ${escapeHtml(p.name)}
+    </span>
+  `).join('');
+}
+
+function openProjectTimeline(projectId) {
+  const project = getProject(projectId);
+  document.getElementById('projectTimelineTitle').innerHTML = `
+    <span class="color-dot" style="background:${project.color}; display:inline-block; vertical-align:middle; margin-right:8px;"></span>
+    ${escapeHtml(project.name)} 時間線
+  `;
+
+  const projectTasks = data.tasks.filter(t => t.projectId === projectId);
+  const byDate = {};
+  projectTasks.forEach(t => {
+    if (!byDate[t.date]) byDate[t.date] = [];
+    byDate[t.date].push(t);
+  });
+
+  const dates = Object.keys(byDate).sort();
+  const content = document.getElementById('projectTimelineContent');
+
+  if (dates.length === 0) {
+    content.innerHTML = '<div class="empty">這個專案還沒有任務</div>';
+  } else {
+    let html = '<div class="timeline">';
+    dates.forEach(dateStr => {
+      const d = new Date(dateStr + 'T00:00:00');
+      const dayTasks = sortTasks(byDate[dateStr]);
+      html += `
+        <div class="timeline-day">
+          <div class="timeline-date">${d.getMonth()+1}月${d.getDate()}日</div>
+          ${dayTasks.map(t => `
+            <div class="timeline-task ${t.completed ? 'completed' : ''}" style="border-left-color:${project.color}" onclick="openTaskModal('${t.id}')">
+              <div style="text-align:left;">
+                <div style="font-weight:600; margin-bottom:4px;">${t.time ? t.time : '全天'} · ${escapeHtml(t.name)}</div>
+                ${t.desc ? `<div style="font-size:0.85rem; color:var(--text-light); line-height:1.4;">${escapeHtml(t.desc)}</div>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  }
+
+  document.getElementById('projectTimelineModal').classList.add('show');
+  // store for add button
+  window.currentProjectForAdd = projectId;
+}
+
+function renderMonth() {
+  const now = new Date();
+  if (currentYear === undefined) {
+    currentYear = now.getFullYear();
+    currentMonth = now.getMonth();
+  }
+
+  document.getElementById('periodTitle').textContent = `${currentYear} 年 ${currentMonth + 1} 月`;
+  document.getElementById('prevBtn').textContent = '← 上月';
+  document.getElementById('nextBtn').textContent = '下月 →';
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+  const startOffset = firstDay.getDay();
+  const daysInMonth = lastDay.getDate();
+
+  const weekdays = ['日','一','二','三','四','五','六'];
+  let html = `<div class="calendar">${weekdays.map(w => `<div class="weekday">${w}</div>`).join('')}`;
+
+  const prevMonthLast = new Date(currentYear, currentMonth, 0).getDate();
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const d = prevMonthLast - i;
+    html += `<div class="day other-month"><div class="day-number">${d}</div></div>`;
+  }
+
+  const todayStr = formatDate(now);
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const dayTasks = sortTasks(data.tasks.filter(t => t.date === dateStr));
+
+    let chips = dayTasks.slice(0, 3).map(t => {
+      const p = getProject(t.projectId);
+      const time = t.time ? t.time : '';
+      const bg = t.completed ? '#e2e8f0' : p.color;
+      return `<div class="task-chip ${t.completed ? 'completed' : ''}" style="background:${bg}" title="${escapeHtml(t.name)}" onclick="event.stopPropagation(); openTaskModal('${t.id}')">
+        <input type="checkbox" ${t.completed ? 'checked' : ''} onclick="event.stopPropagation(); toggleComplete('${t.id}', this.checked)">
+        ${time ? time + ' ' : ''}${escapeHtml(t.name)}
+      </div>`;
+    }).join('');
+
+    if (dayTasks.length > 3) {
+      chips += `<div class="more-tasks">+${dayTasks.length - 3} 更多</div>`;
+    }
+
+    html += `
+      <div class="day ${isToday ? 'today' : ''}" data-date="${dateStr}" onclick="openDayModal('${dateStr}')">
+        <div class="day-number">${day}</div>
+        ${chips}
+      </div>
+    `;
+  }
+
+  const totalCells = startOffset + daysInMonth;
+  const remaining = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="day other-month"><div class="day-number">${i}</div></div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('calendarContainer').innerHTML = html;
+}
+
+function renderWeek() {
+  if (!weekStart) {
+    weekStart = getWeekStart(new Date());
+  }
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+
+  document.getElementById('periodTitle').textContent = 
+    `${weekStart.getMonth()+1}/${weekStart.getDate()} – ${weekEnd.getMonth()+1}/${weekEnd.getDate()}`;
+  document.getElementById('prevBtn').textContent = '← 上週';
+  document.getElementById('nextBtn').textContent = '下週 →';
+
+  const weekdays = ['日','一','二','三','四','五','六'];
+  let html = '<div class="week-view">';
+  const todayStr = formatDate(new Date());
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    const dateStr = formatDate(d);
+    const isToday = dateStr === todayStr;
+
+    const dayTasks = sortTasks(data.tasks.filter(t => t.date === dateStr));
+
+    let tasksHtml = dayTasks.map(t => {
+      const p = getProject(t.projectId);
+      const bg = t.completed ? '#e2e8f0' : p.color;
+      return `
+        <div class="week-task ${t.completed ? 'completed' : ''}" style="background:${bg}" draggable="true" data-task-id="${t.id}" data-date="${dateStr}" onclick="openTaskModal('${t.id}')">
+          <input type="checkbox" ${t.completed ? 'checked' : ''} onclick="event.stopPropagation(); toggleComplete('${t.id}', this.checked)">
+          <div style="flex:1; min-width:0;">
+            <div class="time">${t.time || '全天'}</div>
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.name)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (dayTasks.length === 0) {
+      tasksHtml = '<div class="empty" style="padding:10px 0; width:100%;">沒有任務</div>';
+    }
+
+    html += `
+      <div class="week-day ${isToday ? 'today' : ''}" data-date="${dateStr}">
+        <div class="week-day-header">
+          ${weekdays[i]}<br>
+          <span class="date">${d.getMonth()+1}/${d.getDate()}</span>
+        </div>
+        <div class="week-tasks-container">
+          ${tasksHtml}
+        </div>
+        <button class="btn btn-secondary" style="width:100%;margin-top:10px;padding:8px;font-size:0.8rem;border-radius:12px;" onclick="selectedDateForAdd='${dateStr}'; openTaskModal()">＋ 新增</button>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  document.getElementById('calendarContainer').innerHTML = html;
+}
+
+function render() {
+  if (viewMode === 'month') renderMonth();
+  else renderWeek();
+}
+
+function openDayModal(dateStr) {
+  selectedDateForAdd = dateStr;
+  const d = new Date(dateStr + 'T00:00:00');
+  const dayTasks = sortTasks(data.tasks.filter(t => t.date === dateStr));
+  const total = dayTasks.length;
+  const completed = dayTasks.filter(t => t.completed).length;
+
+  document.getElementById('dayModalTitle').innerHTML = `
+    ${d.getMonth()+1}月${d.getDate()}日 日程總覽
+    <div style="font-size:0.85rem;font-weight:500;color:var(--text-light);margin-top:4px;">
+      共 ${total} 項 · 已完成 ${completed} 項 · 待辦 ${total - completed} 項
+    </div>
+  `;
+
+  const list = document.getElementById('dayTaskList');
+  if (total === 0) {
+    list.innerHTML = '<div class="empty">這一天還沒有任務<br><small>點下方按鈕新增</small></div>';
+  } else {
+    list.innerHTML = `
+      <div style="margin-bottom:12px;font-size:0.85rem;color:var(--primary);">按時間順序排列（已完成任務在最下方）</div>
+      <div class="day-task-list">` + dayTasks.map((t, idx) => {
+      const p = getProject(t.projectId);
+      return `
+        <div class="day-detail-item ${t.completed ? 'completed' : ''}" draggable="true" data-task-id="${t.id}">
+          <span style="font-weight:600;color:var(--primary);min-width:20px;">${idx+1}</span>
+          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleComplete('${t.id}', this.checked)">
+          <span class="color-dot" style="background:${p.color}"></span>
+          <div style="flex:1; min-width:0;">
+            <strong style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;">${t.time ? t.time + ' · ' : '全天 · '}${escapeHtml(t.name)}</strong>
+            <div style="font-size:0.75rem;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(p.name)}${t.desc ? ' · ' + escapeHtml(t.desc) : ''}</div>
+          </div>
+          <button class="btn btn-secondary" style="padding:4px 8px;font-size:0.75rem;border-radius:10px;" onclick="openTaskModal('${t.id}')">編輯</button>
+        </div>
+      `;
+    }).join('') + `</div>`;
+  }
+
+  document.getElementById('dayModal').classList.add('show');
+}
+
+function openTaskModal(taskId = null) {
+  const modal = document.getElementById('taskModal');
+  const form = document.getElementById('taskForm');
+  form.reset();
+
+  const select = document.getElementById('taskProject');
+  select.innerHTML = data.projects.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  if (data.projects.length === 0) {
+    alert('請先新增至少一個專案');
+    return;
+  }
+
+  document.getElementById('deleteTaskBtn').style.display = taskId ? 'inline-block' : 'none';
+
+  if (taskId) {
+    const task = data.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    document.getElementById('taskModalTitle').textContent = '✏️ 編輯任務';
+    document.getElementById('taskId').value = task.id;
+    document.getElementById('taskName').value = task.name;
+    document.getElementById('taskProject').value = task.projectId;
+    document.getElementById('taskDate').value = task.date;
+    document.getElementById('taskTime').value = task.time || '';
+    document.getElementById('taskDesc').value = task.desc || '';
+    document.getElementById('taskCompleted').checked = !!task.completed;
+  } else {
+    document.getElementById('taskModalTitle').textContent = '新增任務';
+    document.getElementById('taskId').value = '';
+    document.getElementById('taskCompleted').checked = false;
+    if (selectedDateForAdd) {
+      document.getElementById('taskDate').value = selectedDateForAdd;
+    } else {
+      document.getElementById('taskDate').value = formatDate(new Date());
+    }
+  }
+
+  modal.classList.add('show');
+  document.getElementById('dayModal').classList.remove('show');
+}
+
+function renderProjectList() {
+  const list = document.getElementById('projectList');
+  if (data.projects.length === 0) {
+    list.innerHTML = '<div class="empty">還沒有專案</div>';
+    return;
+  }
+  list.innerHTML = data.projects.map(p => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span class="color-dot" style="background:${p.color}"></span>
+      <span style="flex:1;">${escapeHtml(p.name)}</span>
+      <button class="btn" style="padding:6px 10px;font-size:0.75rem;background:#ff6b6b;border-radius:12px;" onclick="deleteProject('${p.id}')">刪除</button>
+    </div>
+  `).join('');
+}
+
+function deleteProject(id) {
+  if (!confirm('刪除專案會同時刪除該專案下的所有任務，確定嗎？')) return;
+  data.projects = data.projects.filter(p => p.id !== id);
+  data.tasks = data.tasks.filter(t => t.projectId !== id);
+  saveData();
+  renderProjectsBar();
+  render();
+  renderProjectList();
+}
+
+// View toggle
+document.getElementById('monthViewBtn').onclick = () => {
+  viewMode = 'month';
+  document.getElementById('monthViewBtn').classList.add('active');
+  document.getElementById('weekViewBtn').classList.remove('active');
+  render();
+};
+document.getElementById('weekViewBtn').onclick = () => {
+  viewMode = 'week';
+  document.getElementById('weekViewBtn').classList.add('active');
+  document.getElementById('monthViewBtn').classList.remove('active');
+  if (!weekStart) weekStart = getWeekStart(new Date());
+  render();
+};
+
+// Navigation
+document.getElementById('prevBtn').onclick = () => {
+  if (viewMode === 'month') {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  } else {
+    weekStart.setDate(weekStart.getDate() - 7);
+  }
+  render();
+};
+document.getElementById('nextBtn').onclick = () => {
+  if (viewMode === 'month') {
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  } else {
+    weekStart.setDate(weekStart.getDate() + 7);
+  }
+  render();
+};
+
+document.getElementById('addTaskBtn').onclick = () => {
+  selectedDateForAdd = null;
+  openTaskModal();
+};
+document.getElementById('addTaskFromDay').onclick = () => openTaskModal();
+
+document.getElementById('manageProjectsBtn').onclick = () => {
+  renderProjectList();
+  document.getElementById('projectModal').classList.add('show');
+};
+document.getElementById('closeProjectModal').onclick = () => {
+  document.getElementById('projectModal').classList.remove('show');
+};
+
+document.getElementById('cancelTask').onclick = () => {
+  document.getElementById('taskModal').classList.remove('show');
+};
+document.getElementById('closeDayModal').onclick = () => {
+  document.getElementById('dayModal').classList.remove('show');
+};
+document.getElementById('closeProjectTimeline').onclick = () => {
+  document.getElementById('projectTimelineModal').classList.remove('show');
+};
+document.getElementById('addTaskToProject').onclick = () => {
+  if (window.currentProjectForAdd) {
+    document.getElementById('projectTimelineModal').classList.remove('show');
+    selectedDateForAdd = null;
+    openTaskModal();
+    // pre-select project
+    setTimeout(() => {
+      const select = document.getElementById('taskProject');
+      if (select) select.value = window.currentProjectForAdd;
+    }, 50);
+  }
+};
+
+document.getElementById('deleteTaskBtn').onclick = () => {
+  const id = document.getElementById('taskId').value;
+  if (id && confirm('確定刪除這個任務？')) {
+    data.tasks = data.tasks.filter(t => t.id !== id);
+    saveData();
+    document.getElementById('taskModal').classList.remove('show');
+    render();
+  }
+};
+
+document.getElementById('taskForm').onsubmit = (e) => {
+  e.preventDefault();
+  const id = document.getElementById('taskId').value;
+  const task = {
+    name: document.getElementById('taskName').value.trim(),
+    projectId: document.getElementById('taskProject').value,
+    date: document.getElementById('taskDate').value,
+    time: document.getElementById('taskTime').value || '',
+    desc: document.getElementById('taskDesc').value.trim(),
+    completed: document.getElementById('taskCompleted').checked
+  };
+  if (!task.name || !task.date) return;
+
+  if (id) {
+    const idx = data.tasks.findIndex(t => t.id === id);
+    if (idx >= 0) data.tasks[idx] = { ...data.tasks[idx], ...task };
+  } else {
+    data.tasks.push({ id: genId(), ...task });
+  }
+  saveData();
+  document.getElementById('taskModal').classList.remove('show');
+  render();
+};
+
+document.getElementById('projectForm').onsubmit = (e) => {
+  e.preventDefault();
+  const name = document.getElementById('newProjectName').value.trim();
+  const color = document.getElementById('newProjectColor').value;
+  if (!name) return;
+  data.projects.push({ id: genId(), name, color });
+  saveData();
+  document.getElementById('newProjectName').value = '';
+  renderProjectsBar();
+  renderProjectList();
+  render();
+};
+
+// Close modals on background click
+['taskModal','projectModal','dayModal','projectTimelineModal'].forEach(id => {
+  document.getElementById(id).onclick = (e) => {
+    if (e.target.id === id) e.target.classList.remove('show');
+  };
+});
+
+// Drag and drop for reordering and moving between days
+let draggedTaskId = null;
+
+document.addEventListener('dragstart', (e) => {
+  const el = e.target.closest('.week-task, .day-detail-item');
+  if (el && el.dataset.taskId) {
+    draggedTaskId = el.dataset.taskId;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggedTaskId);
+    el.style.opacity = '0.5';
+  }
+});
+
+document.addEventListener('dragend', (e) => {
+  const el = e.target.closest('.week-task, .day-detail-item');
+  if (el) el.style.opacity = '';
+  draggedTaskId = null;
+});
+
+document.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+});
+
+document.addEventListener('drop', (e) => {
+  e.preventDefault();
+  if (!draggedTaskId) return;
+
+  const task = data.tasks.find(t => t.id === draggedTaskId);
+  if (!task) return;
+
+  // Find target day
+  const dayEl = e.target.closest('.week-day, .day');
+  let targetDate = null;
+  if (dayEl && dayEl.dataset.date) {
+    targetDate = dayEl.dataset.date;
+  } else if (e.target.closest('#dayTaskList')) {
+    // In day modal, keep same date or get from context
+    const modalTitle = document.getElementById('dayModalTitle').textContent;
+    // fallback: don't change date if in modal
+  }
+
+  if (targetDate && targetDate !== task.date) {
+    task.date = targetDate;
+    saveData();
+    render();
+    return;
+  }
+
+  // Reorder within same day (simple: move to end for now, or improve later)
+  // For better UX, we can append and re-sort by completed status
+  const sameDayTasks = data.tasks.filter(t => t.date === task.date);
+  // Move dragged to end of unfinished or based on drop
+  data.tasks = data.tasks.filter(t => t.id !== draggedTaskId);
+  data.tasks.push(task);
+  saveData();
+  render();
+});
+
+// Make week days and calendar days drop targets
+function setupDropZones() {
+  document.querySelectorAll('.week-day, .day').forEach(el => {
+    el.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      el.style.outline = '2px dashed var(--primary)';
+    });
+    el.addEventListener('dragleave', () => {
+      el.style.outline = '';
+    });
+    el.addEventListener('drop', () => {
+      el.style.outline = '';
+    });
+  });
+}
+
+// Call after render
+const originalRender = render;
+render = function() {
+  originalRender();
+  setTimeout(setupDropZones, 50);
+};
+
+// Init
+loadData();
+renderProjectsBar();
+render();
+</script>
+</body>
+</html>
